@@ -2,9 +2,8 @@ package utils
 
 import (
 	"testing"
-	"bytes"
-	"os"
 	"strings"
+	"bytes"
 	"io"
 
 	"github.com/stretchr/testify/assert"
@@ -12,49 +11,44 @@ import (
 
 func TestPrintLinesFromFile(t *testing.T) {
 	cases := []struct {
-		name  string
-		input string
-		want  string
-		errMsg   string
+		name   string
+		input  io.Reader
+		want   string
 	}{
 		{
 			name: "Empty file",
 			input: strings.NewReader(""),
 			want: "",
-			errMsg: "Mismatch for empty file",
 		},
 		{
-			name: "Two short words",
-			input: strings.NewReader("Hi\nYou"),
-			want: "Hi\nYou",
-			errMsg: "Error with two short words",
+			name: "One word",
+			input: strings.NewReader("Hello\n"),
+			want: "read: Hello\n",
 		},
 		{
-			name: "One short word",
-			input: strings.NewReader("Hi"),
-			want: "Hi",
-			errMsg: "Error with one short word",
-		},
-		{
-			name: "Basic sentence",
-			input: strings.NewReader("I do Go tests\ncarefully"),
-			want: "I do Go tests\ncarefully",
-			errMsg: "Basic sentence is not divided correctly",
-		},
-		{
-			name:  "Long line",
+			name: "One long sentence",
 			input: strings.NewReader("Do you have what it takes to be an engineer at TheStartup™?\n"),
-			want:  "Do you have what it takes to be an engineer at TheStartup™?\n",
-			errMsg: "One long line is not being parsed correctly",
+			want: "read: Do you have what it takes to be an engineer at TheStartup™?\n",
+		},
+		{
+			name: "Two lines",
+			input: strings.NewReader("Do you have what it takes to be an engineer at TheStartup™?\nAre you willing to work 80 hours a week in hopes that your 0.001% equity is worth something?\n"),
+			want: "read: Do you have what it takes to be an engineer at TheStartup™?\nread: Are you willing to work 80 hours a week in hopes that your 0.001% equity is worth something?\n",
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, err := GetLinesFromFile(c.input)
-			
-			assert.Nil(t, err)
-			assert.Equal(t, c.want, got, c.errMsg)
+			var buf bytes.Buffer
+
+			err := PrintLinesFromFile(c.input, &buf)
+			if err != nil {
+				t.Fatalf("Error: %v\n", err)
+			}
+
+			got := buf.String()
+
+			assert.Equal(t, c.want, got)
 		})
 	}
 }

@@ -9,21 +9,16 @@ import (
 
 
 func main() {
-	// Basic debugging config 
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	file, err := os.Open("messages.txt")
 	if err != nil {
-		log.Fatalf("Error while opening the file: %v", err)
+		log.Fatalf("Error while opening the file: %v\n", err)
 	}
 	defer file.Close()
 
-	lines, err := utils.GetLinesFromFile(file)
+	err = utils.PrintLinesFromFile(file, nil)
 
 	if err != nil {
-		log.Fatal("Error while getting lines string")
+		log.Fatalf("Error while getting lines string: %v\n", err)
 	}
-
-	log.Printf("slice lines: %v", lines)
-	
 }
